@@ -5,12 +5,23 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public IInputProvider inputProvider { get; private set; }
 
+    [SerializeField] private VRInputManager _vrInputManagerPrefab;
+    [SerializeField] private KeyboardMouseInputManager _keyboardMouseInputManagerPrefab;
+    [SerializeField] private bool _useKeyboardMouse = false;
+    
     private bool _inTransition = false;
 
-    private void Awake()
+    public static GameManager BootstrapFromEditor()
     {
-        DontDestroyOnLoad(gameObject);
+#if UNITY_EDITOR
+        var gameManagerPrefab = Resources.Load<GameManager>("GameManager");
+        var gameManager = Instantiate(gameManagerPrefab);
+        return gameManager;
+#else
+        throw new NotImplementedException();
+#endif
     }
 
     public Coroutine GoToMenuScene()
@@ -39,5 +50,23 @@ public class GameManager : MonoBehaviour
 
         // yield return loadingScreen.Hide(); 
         _inTransition = false;
+    }
+    
+    private void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
+#if !UNITY_EDITOR
+        _useKeyboardMouse = false
+#endif
+        if (_useKeyboardMouse)
+        {
+            inputProvider = Instantiate(_keyboardMouseInputManagerPrefab, transform);
+        }
+        else
+        {
+            inputProvider = Instantiate(_vrInputManagerPrefab, transform);
+        }
+
+        inputProvider.TryInitialize();
     }
 }
