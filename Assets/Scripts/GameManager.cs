@@ -56,7 +56,7 @@ public class GameManager : MonoBehaviour
     {
         DontDestroyOnLoad(gameObject);
 #if !UNITY_EDITOR
-        _useKeyboardMouse = false
+        _useKeyboardMouse = false;
 #endif
         if (_useKeyboardMouse)
         {
